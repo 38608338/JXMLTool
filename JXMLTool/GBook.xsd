@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://www.example.org/GBook/"
+	targetNamespace="http://www.demo.com">
+	<element name="GBook">
+		<complexType>
+			<sequence>
+				<element name="name" >
+				      <simpleType>
+				        <restriction base="string">
+				          <minLength value="4"/>
+				          <maxLength value="60"/>
+				        </restriction>
+				      </simpleType>
+				</element>
+				<element name="pageSize">
+				      <simpleType>
+				        <restriction base="int">
+				          <minInclusive value="1"/>
+				          <maxInclusive value="10000"/>
+				        </restriction>
+				      </simpleType>
+				</element>
+			</sequence>
+		</complexType>
+	</element>
+	
+
+</schema>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ns1:GBook xmlns:ns1="http://www.demo.com">
+ <name>哈利波特之火焰杯</name>
+ <pageSize>1238</pageSize>
+</ns1:GBook>
