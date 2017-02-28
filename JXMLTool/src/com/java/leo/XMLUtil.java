@@ -1,9 +1,12 @@
 package com.java.leo;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -141,6 +144,24 @@ public class XMLUtil {
 		return result;
 	}
 	
+	public static boolean validateXmlFileByXsd(String xmlFile, File xsdFile){
+		boolean flag = false;
+		try {
+			String schemaLanguage = XMLConstants.W3C_XML_SCHEMA_NS_URI;
+	        SchemaFactory schemaFactory = SchemaFactory.newInstance(schemaLanguage);
+	        Schema schema = schemaFactory.newSchema(xsdFile);
+	        // unmarshaller.setSchema(schema);
+	        Validator validator = schema.newValidator();
+	        InputSource inputSource = new InputSource(xmlFile);
+	        Source source = new SAXSource(inputSource);
+	        validator.validate(source);
+	        flag = true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return flag;
+	}
+	
 	public static boolean validateXmlByXsd(String xmlStr, File xsdFile){
 		boolean flag = false;
 		try {
@@ -149,7 +170,8 @@ public class XMLUtil {
 	        Schema schema = schemaFactory.newSchema(xsdFile);
 	        // unmarshaller.setSchema(schema);
 	        Validator validator = schema.newValidator();
-	        InputSource inputSource = new InputSource(xmlStr);
+	        ByteArrayInputStream input=new ByteArrayInputStream(xmlStr.getBytes("utf-8"));
+			InputSource inputSource = new InputSource(input);
 	        Source source = new SAXSource(inputSource);
 	        validator.validate(source);
 	        flag = true;
@@ -186,6 +208,32 @@ public class XMLUtil {
 		return requestXML;
 	}
 	
+	public static String formatRequestXML(String inputXML){
+		String outputXML = inputXML;
+		inputXML = inputXML.replaceAll("[\\s&&[^\r\n]]*(?:[\r\n][\\s&&[^\r\n]]*)+", "");
+		Pattern p = Pattern.compile("(.*)<!\\[CDATA\\[(.*)\\]\\]>(.*)");
+		Matcher m = p.matcher(inputXML);
+		String tempXML = "";
+		if(m.matches()){
+			String inXML = m.group(2);
+			try{
+				inXML = formatXML(m.group(2));
+			}catch(Exception e) {
+				e.printStackTrace();
+			}
+			inXML = inXML.replaceAll("\n\n", "\n");
+			tempXML = m.group(1)+"<![CDATA["+inXML+"]]>"+m.group(3);
+			try{
+				outputXML = formatXML(tempXML);
+				outputXML = outputXML.replaceAll("\n\n", "\n");
+			}catch(Exception e) {
+				e.printStackTrace();
+			}
+			
+		}
+		return outputXML;
+	}
+	
 	public static void main(String[] args) {
 		Book book=new Book();
 		book.setName("¹þÀû²¨ÌØÖ®»ðÑæ±­");
@@ -194,6 +242,7 @@ public class XMLUtil {
 		
 		String xml=convertToXml(book);
 		System.out.println(xml);
+		System.out.println(validateXmlByXsd(xml, new File("GBook.xsd")));
 		
 		Book book2=converyToJavaBean(xml, Book.class);
 		System.out.println(book2.toString() +" "+book2.getName());
@@ -202,11 +251,12 @@ public class XMLUtil {
 		System.out.println(xml);
 		try {
 			System.out.println(formatXML(xml));
+			System.out.println(formatRequestXML(xml));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		System.out.println(validateXmlByXsd("GBook.out.xml", new File("GBook.xsd")));
-		System.out.println(validateXmlByXsd("2GBook.out.xml", new File("GBook.xsd")));
+		System.out.println(validateXmlFileByXsd("GBook.out.xml", new File("GBook.xsd")));
+		System.out.println(validateXmlFileByXsd("2GBook.out.xml", new File("GBook.xsd")));
 	}
 }
